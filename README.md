@@ -16,8 +16,8 @@ LLM アプリケーション開発者養成講座のハンズオン環境構築�
 以下のコマンドでこのリポジトリのソースコードをダウンロードしてください。
 
 ```console
-curl -LsSf -o training-llm-application-development-starter.zip \
-  https://github.com/GenerativeAgents/training-llm-application-development-starter/archive/refs/heads/main.zip
+curl -LsSf -o training-llm-application-development-starter.tar.gz \
+  https://github.com/GenerativeAgents/training-llm-application-development-starter/archive/refs/heads/main.tar.gz
 ```
 
 以下のコマンドで zip ファイルを解凍してください。
@@ -29,11 +29,11 @@ unzip training-llm-application-development-starter.zip
 cd コマンドでディレクトリを移動してください。
 
 ```console
-cd training-llm-application-development-starter
+cd training-llm-application-development-starter-main
 ```
 
 > [!NOTE]
-> 以後のコマンドはすべて training-llm-application-development-starter ディレクトリで実行します。
+> 以後のコマンドはすべて training-llm-application-development-starter-main ディレクトリで実行します。
 
 ### uv のインストール
 
@@ -65,7 +65,7 @@ uv で Python と Python パッケージをインストールします。
 uv sync
 ```
 
-以下のコマンドで Python のバージョンが表示されれば、インストール完了です。
+以下のコマンドで Python のバージョンが表示されるか確認してください。
 
 ```console
 uv run python --version
@@ -82,6 +82,21 @@ git clone --depth 1 https://github.com/langchain-ai/langchain.git ./tmp/langchai
 ```
 
 ## 動作確認
+
+### Visual Studio Code の起動
+
+> [!WARNING]
+> AWS Cloud9 を使用している場合はこの手順は不要です。次の「Jupyter の起動」に進んでください。
+
+このディレクトリを Visual Studio Code で開けることを確認してください。
+
+code コマンドで Visual Studio Code を開けるように設定されている場合、以下のコマンドでこのディレクトリが開きます。
+
+```console
+code .
+```
+
+![](./docs/images/vscode.png)
 
 ### Jupyter の起動
 
@@ -121,13 +136,15 @@ http://localhost:8080 にアクセスしてください。
 
 Jupyter のトークンを入力するよう求められた場合、ターミナル上に表示されているトークンをコピーしてログインしてください。
 
+![](./docs/images/jupyter_home.png)
+
 「notebooks」というフォルダの「hello.ipynb」を開いてください。
 
 「hello.ipynb」の内容が想定通り動作するか確認確認してください。
 
 ![](./docs/images/jupyter_hello_world.png)
 
-### Streamlit の動作確認
+### Streamlit の起動
 
 Jupyter を Ctrl + C で停止してください。
 
@@ -136,6 +153,9 @@ Jupyter を Ctrl + C で停止してください。
 ```console
 uv run streamlit run app.py --server.port 8080
 ```
+
+> [!INFO]
+> Streamlit の起動時に Email の入力が求められた場合、入力せず空のまま Enter で進めてください。
 
 http://localhost:8080 にアクセスして、以下のように Streamlit の画面が表示されることを確認してください。
 
