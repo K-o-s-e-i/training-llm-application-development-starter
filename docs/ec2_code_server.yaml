@@ -316,11 +316,6 @@ Resources:
   ########### SSM Resources ###########
   SSMLogBucket:
     Type: AWS::S3::Bucket
-    Metadata:
-      cfn_nag:
-        rules_to_suppress:
-          - id: W35
-            reason: Access logs aren't needed for this bucket
     DeletionPolicy: Delete
     Properties:
       AccessControl: Private
@@ -481,15 +476,6 @@ Resources:
 
   EmptyS3Bucket:
     Type: AWS::Lambda::Function
-    Metadata:
-      cfn_nag:
-        rules_to_suppress:
-          - id: W58
-            reason: EmptyS3BucketExecutionRole has the AWSLambdaBasicExecutionRole managed policy attached, allowing writing to CloudWatch logs
-          - id: W89
-            reason: Bootstrap function does not need the scaffolding of a VPC or provisioned concurrency
-          - id: W92
-            reason: Bootstrap function does not need provisioned concurrency
     Properties:
       Description: Empty S3 bucket CloudFormation custom resource
       Handler: index.lambda_handler
@@ -529,11 +515,6 @@ Resources:
                   cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData={}, reason='No action to take')
 
   EmptyS3BucketLogGroup:
-    Metadata:
-      cfn_nag:
-        rules_to_suppress:
-          - id: W84
-            reason: KMS Key not required for encrypting this non sensitive data
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Delete
     UpdateReplacePolicy: Delete
@@ -550,11 +531,6 @@ Resources:
 
   ########### EC2 Resources ###########
   VSCodeInstanceRole:
-    Metadata:
-      cfn_nag:
-        rules_to_suppress:
-          - id: W11
-            reason: CodeWhisperer requires '*' as a resource, reference https://docs.aws.amazon.com/codewhisperer/latest/userguide/cloud9-setup.html#codewhisperer-IAM-policies
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
