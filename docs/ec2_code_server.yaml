@@ -552,30 +552,10 @@ Resources:
             Principal:
               Service:
                 - ec2.amazonaws.com
-                - ssm.amazonaws.com
-                - codecommit.amazonaws.com
             Action:
               - 'sts:AssumeRole'
       ManagedPolicyArns:
         - !Sub arn:${AWS::Partition}:iam::aws:policy/AdministratorAccess
-      Policies:
-        - PolicyName: !Sub CDKAssumeRolePolicy-${AWS::Region}
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - sts:AssumeRole
-                Resource:
-                  - !Sub arn:${AWS::Partition}:iam::*:role/cdk-*
-        - PolicyName: !Sub Codewhisperer-${AWS::Region}
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - codewhisperer:GenerateRecommendations
-                Resource: '*'
 
   VSCodeInstanceProfile:
     Type: AWS::IAM::InstanceProfile
