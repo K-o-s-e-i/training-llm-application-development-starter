@@ -405,6 +405,15 @@ Resources:
                 - rm -rf /tmp/aws
                 - aws --version
           - action: aws:runShellScript
+            name: InstallNode
+            inputs:
+              runCommand:
+                - sudo apt-get update
+                - sudo apt-get install -y -q curl
+                - curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor -o /usr/share/keyrings/nodesource-keyring.gpg
+                - echo "deb [arch={{ architecture }} signed-by=/usr/share/keyrings/nodesource-keyring.gpg] https://deb.nodesource.com/{{ nodeVersion }} {{ ubuntuVersion }} main" >> /etc/apt/sources.list.d/nodesource.list
+                - sudo apt-get update && sudo apt-get install -y -q nodejs
+          - action: aws:runShellScript
             name: UpdateProfile
             inputs:
               runCommand:
