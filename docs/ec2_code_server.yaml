@@ -3,10 +3,10 @@ AWSTemplateFormatVersion: '2010-09-09'
 Parameters:
   InstanceVolumeSize:
     Type: Number
-    Description: The volume size in GB
+    Description: The size of the volume, in GiBs.
     Default: 30
   InstanceType:
-    Description: Type of EC2 instance to launch
+    Description: The instance type.
     Type: String
     Default: c7i.large
     AllowedValues:
@@ -202,10 +202,6 @@ Parameters:
         t4g.xlarge,
         t4g.2xlarge
       ]
-  HomeFolder:
-    Type: String
-    Description: The home folder in the VSCodeInstance
-    Default: /home/ubuntu/environment
 
 Mappings:
   Subnets:
@@ -393,7 +389,7 @@ Resources:
           EOF
 
           sudo systemctl restart code-server@ubuntu
-          sudo -u ubuntu mkdir -p ${HomeFolder}
+          sudo -u ubuntu mkdir -p /home/ubuntu/environment
       Tags:
         - Key: SSMBootstrap
           Value: True
@@ -474,6 +470,6 @@ Outputs:
       Name: !Sub ${AWS::StackName}-Password
   URL:
     Description: VSCode-Server URL
-    Value: !Sub https://${CloudFrontDistribution.DomainName}/?folder=${HomeFolder}
+    Value: !Sub https://${CloudFrontDistribution.DomainName}/?folder=/home/ubuntu/environment
     Export:
       Name: !Sub ${AWS::StackName}-URL
