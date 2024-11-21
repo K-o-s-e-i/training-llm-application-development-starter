@@ -386,12 +386,14 @@ Resources:
           curl -fsSL https://code-server.dev/install.sh | sh
           sudo systemctl enable --now code-server@ubuntu
 
+          set +o xtrace
           sudo -u ubuntu tee /home/ubuntu/.config/code-server/config.yaml <<EOF
           bind-addr: 0.0.0.0:8080
           cert: false
           auth: password
           hashed-password: "$(echo -n $(aws secretsmanager get-secret-value --secret-id '${CodeServerPasswordSecret.Id}' --query 'SecretString' --output text) | sudo npx argon2-cli -e)"
           EOF
+          set -o xtrace
 
           sudo systemctl restart code-server@ubuntu
           sudo -u ubuntu mkdir -p /home/ubuntu/environment
