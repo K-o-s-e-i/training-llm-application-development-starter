@@ -442,26 +442,11 @@ Resources:
             inputs:
               runCommand:
                 - sudo apt-get update
-                - sudo apt-get install -y -q curl nginx
+                - sudo apt-get install -y -q curl
                 - '#!/bin/bash'
                 - export HOME=/home/ubuntu
                 - curl -fsSL https://code-server.dev/install.sh | sh
                 - sudo systemctl enable --now code-server@ubuntu
-                - !Sub |
-                  sudo tee /etc/nginx/sites-available/code-server <<EOF
-                  server {
-                      listen 80;
-                      listen [::]:80;
-                      server_name ${CloudFrontDistribution.DomainName};
-                      location / {
-                        proxy_pass http://localhost:8080/;
-                        proxy_set_header Host \$host;
-                        proxy_set_header Upgrade \$http_upgrade;
-                        proxy_set_header Connection upgrade;
-                        proxy_set_header Accept-Encoding gzip;
-                      }
-                  }
-                  EOF
                 - !Sub |
                   sudo tee /home/ubuntu/.config/code-server/config.yaml <<EOF
                   cert: false
@@ -492,8 +477,6 @@ Resources:
                   }
                   EOF
                 - sudo systemctl restart code-server@ubuntu
-                - sudo ln -s ../sites-available/code-server /etc/nginx/sites-enabled/code-server
-                - sudo systemctl restart nginx
                 # - sudo -u ubuntu --login code-server --install-extension AmazonWebServices.aws-toolkit-vscode --force
                 - sudo -u ubuntu --login code-server --install-extension AmazonWebServices.amazon-q-vscode --force
                 - sudo -u ubuntu --login code-server --install-extension synedra.auto-run-command --force
