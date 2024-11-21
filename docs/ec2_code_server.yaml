@@ -363,35 +363,37 @@ Resources:
       SecurityGroupIds:
         - !Ref SecurityGroup
       IamInstanceProfile: !Ref VSCodeInstanceProfile
-      UserData: !Base64 |
-        #!/bin/bash
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
 
-        set -o errexit
-        set -o nounset
-        set -o pipefail
-        set -o xtrace
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          set -o xtrace
 
-        # Install AWS CLI
-        snap install aws-cli --classic
-        aws --version
+          # Install AWS CLI
+          snap install aws-cli --classic
+          aws --version
 
-        # Install npm
-        sudo apt-get update
-        sudo apt-get install -y npm
+          # Install npm
+          sudo apt-get update
+          sudo apt-get install -y npm
 
-        # Install code-server
-        curl -fsSL https://code-server.dev/install.sh | sh
-        sudo systemctl enable --now code-server@ubuntu
+          # Install code-server
+          export HOME=/home/ubuntu
+          curl -fsSL https://code-server.dev/install.sh | sh
+          sudo systemctl enable --now code-server@ubuntu
 
-        sudo -u ubuntu tee /home/ubuntu/.config/code-server/config.yaml <<EOF
-        bind-addr: 0.0.0.0:8080
-        cert: false
-        auth: password
-        hashed-password: "$(echo -n $(aws secretsmanager get-secret-value --secret-id '${VSCodeServerPasswordSecret.Id}' --query 'SecretString' --output text) | sudo npx argon2-cli -e)"
-        EOF
+          sudo -u ubuntu tee /home/ubuntu/.config/code-server/config.yaml <<EOF
+          bind-addr: 0.0.0.0:8080
+          cert: false
+          auth: password
+          hashed-password: "$(echo -n $(aws secretsmanager get-secret-value --secret-id '${VSCodeServerPasswordSecret.Id}' --query 'SecretString' --output text) | sudo npx argon2-cli -e)"
+          EOF
 
-        sudo systemctl restart code-server@ubuntu
-        sudo -u ubuntu mkdir -p ${HomeFolder}
+          sudo systemctl restart code-server@ubuntu
+          sudo -u ubuntu mkdir -p ${HomeFolder}
       Tags:
         - Key: SSMBootstrap
           Value: True
