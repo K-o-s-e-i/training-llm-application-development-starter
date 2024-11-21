@@ -317,21 +317,6 @@ Resources:
       VpcId: !Ref VPC
 
   ########### SSM Resources ###########
-  SSMLogBucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Delete
-    Properties:
-      AccessControl: Private
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-
   VSCodeServerPasswordSecret:
     Type: AWS::SecretsManager::Secret
     Properties:
@@ -340,206 +325,6 @@ Resources:
         PasswordLength: 16
     DeletionPolicy: Delete
     UpdateReplacePolicy: Delete
-
-  VSCodeInstanceSSMDoc:
-    Type: AWS::SSM::Document
-    Properties:
-      DocumentType: Command
-      Content:
-        schemaVersion: '2.2'
-        description: Bootstrap VSCode code-server instance
-        parameters:
-          architecture:
-            type: String
-            default: amd64
-            description: Instance architecture type
-            allowedValues:
-              - arm64
-              - amd64
-          ubuntuVersion:
-            type: String
-            default: jammy
-            allowedValues:
-              - focal
-              - bionic
-              - jammy
-          nodeVersion:
-            type: String
-            default: node_20.x
-            allowedValues:
-              - node_21.x
-              - node_20.x
-              - node_19.x
-          dotNetVersion:
-            type: String
-            default: dotnet-sdk-8.0
-            allowedValues:
-              - dotnet-sdk-8.0
-              - dotnet-sdk-7.0
-              - dotnet-sdk-8.0
-        mainSteps:
-          - action: aws:runShellScript
-            name: SetShell
-            inputs:
-              runCommand:
-                - echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections
-          - action: aws:runShellScript
-            name: AWSProfile
-            inputs:
-              runCommand:
-                - mkdir -p /home/ubuntu/.aws
-                - !Sub |
-                  sudo tee /home/ubuntu/.aws/config <<EOF
-                  [default]
-                  output=json
-                  region=${AWS::Region}
-                  EOF
-                - touch /home/ubuntu/.aws/credentials
-                - sudo chown ubuntu:ubuntu /home/ubuntu/.aws -R
-          - action: aws:runShellScript
-            name: InstallAWSCLI
-            inputs:
-              runCommand:
-                - sudo apt-get update
-                - sudo apt-get install -y -q curl unzip
-                - curl -fsSL https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip -o /tmp/aws-cli.zip
-                - unzip -q -d /tmp /tmp/aws-cli.zip
-                - sudo /tmp/aws/install
-                - rm -rf /tmp/aws
-                - aws --version
-          - action: aws:runShellScript
-            name: InstallNode
-            inputs:
-              runCommand:
-                - sudo apt-get update
-                - sudo apt-get install -y -q curl
-                - curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor -o /usr/share/keyrings/nodesource-keyring.gpg
-                - echo "deb [arch={{ architecture }} signed-by=/usr/share/keyrings/nodesource-keyring.gpg] https://deb.nodesource.com/{{ nodeVersion }} {{ ubuntuVersion }} main" >> /etc/apt/sources.list.d/nodesource.list
-                - sudo apt-get update && sudo apt-get install -y -q nodejs
-          - action: aws:runShellScript
-            name: UpdateProfile
-            inputs:
-              runCommand:
-                - '#!/bin/bash'
-                - echo LANG=en_US.utf-8 >> /etc/environment
-                - echo LC_ALL=en_US.UTF-8 >> /etc/environment
-                - echo 'PATH=$PATH:/home/ubuntu/.local/bin' >> /home/ubuntu/.bashrc
-                - echo 'export PATH' >> /home/ubuntu/.bashrc
-                - !Sub echo 'export AWS_REGION=${AWS::Region}' >> /home/ubuntu/.bashrc
-                - !Sub echo 'export AWS_ACCOUNTID=${AWS::AccountId}' >> /home/ubuntu/.bashrc
-                - echo 'export NEXT_TELEMETRY_DISABLED=1' >> /home/ubuntu/.bashrc
-          - action: aws:runShellScript
-            name: ConfigureCodeServer
-            inputs:
-              runCommand:
-                - sudo apt-get update
-                - sudo apt-get install -y -q curl
-                - '#!/bin/bash'
-                - export HOME=/home/ubuntu
-                - curl -fsSL https://code-server.dev/install.sh | sh
-                - sudo systemctl enable --now code-server@ubuntu
-                - !Sub |
-                  sudo tee /home/ubuntu/.config/code-server/config.yaml <<EOF
-                  cert: false
-                  auth: password
-                  hashed-password: "$(echo -n $(aws secretsmanager get-secret-value --secret-id '${VSCodeServerPasswordSecret.Id}' --query 'SecretString' --output text) | sudo npx argon2-cli -e)"
-                  EOF
-                - sudo -u ubuntu --login mkdir -p /home/ubuntu/.local/share/code-server/User/
-                - sudo -u ubuntu --login touch /home/ubuntu/.local/share/code-server/User/settings.json
-                - sudo systemctl restart code-server@ubuntu
-                - sudo chown ubuntu:ubuntu /home/ubuntu -R
-  VSCodeInstanceSSMAssociation:
-    Type: AWS::SSM::Association
-    Properties:
-      Name: !Ref VSCodeInstanceSSMDoc
-      OutputLocation:
-        S3Location:
-          OutputS3BucketName: !Ref SSMLogBucket
-          OutputS3KeyPrefix: bootstrap
-      Targets:
-        - Key: tag:SSMBootstrap
-          Values: [True]
-        - Key: tag:Name
-          Values: ['VSCodeServer']
-
-  ### Empty S3 bucket resources ###
-  EmptyS3BucketExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - !Sub arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-      Policies:
-        - PolicyName: !Sub EmptyS3BucketPolicy-${AWS::Region}
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:ListBucket
-                  - s3:DeleteObject
-                Resource: '*'
-
-  EmptyS3Bucket:
-    Type: AWS::Lambda::Function
-    Properties:
-      Description: Empty S3 bucket CloudFormation custom resource
-      Handler: index.lambda_handler
-      Role:
-        Fn::GetAtt:
-          - EmptyS3BucketExecutionRole
-          - Arn
-      Runtime: python3.11
-      MemorySize: 1024
-      Timeout: 400
-      Code:
-        ZipFile: |
-          import boto3
-          import cfnresponse
-          import logging
-
-          logger = logging.getLogger(__name__)
-          logger.setLevel(logging.INFO)
-
-          def lambda_handler(event, context):
-              logger.info('event: {}'.format(event))
-              logger.info('context: {}'.format(context))
-
-              if event['RequestType'] == 'Delete':
-                  try:
-                      AssetsBucketName = (event['ResourceProperties']['S3Bucket'])
-                      s3 = boto3.resource('s3')
-                      logger.info('S3 Object initialized')
-                      bucket = s3.Bucket(AssetsBucketName)
-                      logger.info('S3 bucket: ' + AssetsBucketName)
-                      bucket.objects.all().delete()
-                      cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData={}, reason='S3 bucket emptied: ' + AssetsBucketName )
-                  except Exception as e:
-                      logger.error(e, exc_info=True)
-                      cfnresponse.send(event, context, cfnresponse.FAILED, responseData={}, reason=str(e))
-              else:
-                  cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData={}, reason='No action to take')
-
-  EmptyS3BucketLogGroup:
-    Type: AWS::Logs::LogGroup
-    DeletionPolicy: Delete
-    UpdateReplacePolicy: Delete
-    Properties:
-      LogGroupName: !Sub /aws/lambda/${EmptyS3Bucket}
-      RetentionInDays: 7
-
-  EmptyS3BucketCustomResource:
-    Type: Custom::EmptyS3Bucket
-    Properties:
-      ServiceToken: !GetAtt EmptyS3Bucket.Arn
-      S3Bucket: !Ref SSMLogBucket
-      ServiceTimeout: 180
 
   ########### EC2 Resources ###########
   VSCodeInstanceRole:
@@ -581,12 +366,35 @@ Resources:
       SecurityGroupIds:
         - !Ref SecurityGroup
       IamInstanceProfile: !Ref VSCodeInstanceProfile
-      UserData:
-        Fn::Base64: !Sub |
-          #cloud-config
-          hostname: dev
-          runcmd:
-            - mkdir -p ${HomeFolder} && chown ubuntu:ubuntu ${HomeFolder}
+      UserData: !Base64 |
+        #!/bin/bash
+
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+        set -o xtrace
+
+        # Install AWS CLI
+        snap install aws-cli --classic
+        aws --version
+
+        # Install npm
+        sudo apt-get update
+        sudo apt-get install -y npm
+
+        # Install code-server
+        curl -fsSL https://code-server.dev/install.sh | sh
+        sudo systemctl enable --now code-server@ubuntu
+
+        sudo -u ubuntu tee /home/ubuntu/.config/code-server/config.yaml <<EOF
+        bind-addr: 0.0.0.0:8080
+        cert: false
+        auth: password
+        hashed-password: "$(echo -n $(aws secretsmanager get-secret-value --secret-id '${VSCodeServerPasswordSecret.Id}' --query 'SecretString' --output text) | sudo npx argon2-cli -e)"
+        EOF
+
+        sudo systemctl restart code-server@ubuntu
+        sudo -u ubuntu mkdir -p ${HomeFolder}
       Tags:
         - Key: SSMBootstrap
           Value: True
