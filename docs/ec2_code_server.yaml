@@ -595,6 +595,8 @@ Resources:
           hostname: dev
           runcmd:
             - mkdir -p ${HomeFolder} && chown ubuntu:ubuntu ${HomeFolder}
+      CreditSpecification:
+        CPUCredits: standard
       Tags:
         - Key: SSMBootstrap
           Value: True
