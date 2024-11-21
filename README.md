@@ -23,7 +23,7 @@ curl -LsSf -o training-llm-application-development-starter.tar.gz \
 以下のコマンドで zip ファイルを解凍してください。
 
 ```console
-unzip training-llm-application-development-starter.zip
+tar -xzvf training-llm-application-development-starter.tar.gz
 ```
 
 cd コマンドでディレクトリを移動してください。
