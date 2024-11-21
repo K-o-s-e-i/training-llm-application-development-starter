@@ -204,11 +204,12 @@ Parameters:
       ]
 
 Mappings:
-  Subnets:
+  Constants:
+    EC2:
+      ImageId: '{{resolve:ssm:/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id}}'
     VPC:
-      CIDR: 10.0.0.0/16
-    PublicOne:
-      CIDR: 10.0.1.0/24
+      CidrBlock: 10.0.0.0/16
+      PublicSubnetCidrBlock: 10.0.0.0/24
   # aws ec2 describe-managed-prefix-lists  --region <REGION> | jq -r '.PrefixLists[] | select (.PrefixListName == "com.amazonaws.global.cloudfront.origin-facing") | .PrefixListId'
   AWSRegions2PrefixListID:
     ap-northeast-1:
@@ -249,7 +250,7 @@ Resources:
   VPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: !FindInMap [Subnets, VPC, CIDR]
+      CidrBlock: !FindInMap [Constants, VPC, CidrBlock]
       EnableDnsSupport: true
       EnableDnsHostnames: true
       Tags:
@@ -258,59 +259,53 @@ Resources:
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
-
-  GatewayAttachment:
+  VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
       VpcId: !Ref VPC
       InternetGatewayId: !Ref InternetGateway
 
-  PublicSubnetOne:
-    Type: AWS::EC2::Subnet
-    Properties:
-      CidrBlock: !FindInMap [Subnets, PublicOne, CIDR]
-      VpcId: !Ref VPC
-      MapPublicIpOnLaunch: true
-      AvailabilityZone: !Select [0, !GetAZs '']
-
-  PublicOneRouteTable:
+  PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref VPC
-
-  PublicOneRoute:
+  PublicRoute:
     Type: AWS::EC2::Route
-    DependsOn: GatewayAttachment
+    DependsOn: VPCGatewayAttachment
     Properties:
-      RouteTableId: !Ref PublicOneRouteTable
+      RouteTableId: !Ref PublicRouteTable
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
 
-  PublicOneRouteTableAssoc:
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap [Constants, VPC, PublicSubnetCidrBlock]
+      MapPublicIpOnLaunch: true
+  PublicSubnetRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref PublicOneRouteTable
-      SubnetId: !Ref PublicSubnetOne
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
 
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: SG for Developer Machine - only allow CloudFront ingress
+      VpcId: !Ref VPC
       SecurityGroupIngress:
-        - Description: Allow HTTP from com.amazonaws.global.cloudfront.origin-facing
+        - Description: Allow from CloudFront
           IpProtocol: tcp
           FromPort: 8080
           ToPort: 8080
           SourcePrefixListId:
             !FindInMap [AWSRegions2PrefixListID, !Ref 'AWS::Region', PrefixList]
       SecurityGroupEgress:
-        - Description: Allow all outbound traffic
-          IpProtocol: -1
+        - IpProtocol: -1
           CidrIp: 0.0.0.0/0
-      VpcId: !Ref VPC
 
   ########### SSM Resources ###########
-  VSCodeServerPasswordSecret:
+  CodeServerPasswordSecret:
     Type: AWS::SecretsManager::Secret
     Properties:
       Name: !Sub ${AWS::StackName}-Password
@@ -320,30 +315,36 @@ Resources:
     UpdateReplacePolicy: Delete
 
   ########### EC2 Resources ###########
-  VSCodeInstanceRole:
+  Role:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
           - Effect: Allow
+            Action: sts:AssumeRole
             Principal:
-              Service:
-                - ec2.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
+              Service: ec2.amazonaws.com
       ManagedPolicyArns:
         - !Sub arn:${AWS::Partition}:iam::aws:policy/AdministratorAccess
-
-  VSCodeInstanceProfile:
+  InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Roles:
         - !Ref VSCodeInstanceRole
 
-  VSCodeInstanceEC2Instance:
+  Instance:
     Type: AWS::EC2::Instance
     Properties:
+      ImageId: !FindInMap [Constants, EC2, ImageId]
+      InstanceType: !Ref InstanceType
+      NetworkInterfaces:
+        - SubnetId: !Ref PublicSubnet
+          AssociatePublicIpAddress: 'true'
+          DeviceIndex: '0'
+          GroupSet:
+            - !Ref SecurityGroup
+      IamInstanceProfile: !Ref VSCodeInstanceProfile
       BlockDeviceMappings:
         - Ebs:
             VolumeSize: !Ref InstanceVolumeSize
@@ -351,14 +352,9 @@ Resources:
             DeleteOnTermination: true
             Encrypted: true
           DeviceName: /dev/sda1
-      Monitoring: true
-      SubnetId: !Ref PublicSubnetOne
-      ImageId: >-
-        {{resolve:ssm:/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id}}
-      InstanceType: !Ref InstanceType
-      SecurityGroupIds:
-        - !Ref SecurityGroup
-      IamInstanceProfile: !Ref VSCodeInstanceProfile
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
@@ -385,19 +381,14 @@ Resources:
           bind-addr: 0.0.0.0:8080
           cert: false
           auth: password
-          hashed-password: "$(echo -n $(aws secretsmanager get-secret-value --secret-id '${VSCodeServerPasswordSecret.Id}' --query 'SecretString' --output text) | sudo npx argon2-cli -e)"
+          hashed-password: "$(echo -n $(aws secretsmanager get-secret-value --secret-id '${CodeServerPasswordSecret.Id}' --query 'SecretString' --output text) | sudo npx argon2-cli -e)"
           EOF
 
           sudo systemctl restart code-server@ubuntu
           sudo -u ubuntu mkdir -p /home/ubuntu/environment
-      Tags:
-        - Key: SSMBootstrap
-          Value: True
-        - Key: Name
-          Value: !Ref AWS::StackName
 
   ########### CloudFront Resources ###########
-  VSCodeInstanceCachePolicy:
+  CachePolicy:
     Type: AWS::CloudFront::CachePolicy
     Properties:
       CachePolicyConfig:
@@ -405,16 +396,8 @@ Resources:
         MaxTTL: 31536000
         MinTTL: 1
         Name:
-          !Join [
-            '-',
-            [
-              'VSCodeServer',
-              !Select [
-                4,
-                !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]
-              ]
-            ]
-          ]
+          # prettier-ignore
+          !Join ['-', ['VSCodeServer', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]
         ParametersInCacheKeyAndForwardedToOrigin:
           CookiesConfig:
             CookieBehavior: all
@@ -434,7 +417,7 @@ Resources:
           QueryStringsConfig:
             QueryStringBehavior: all
 
-  CloudFrontDistribution:
+  Distribution:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
@@ -449,27 +432,28 @@ Resources:
             - PATCH
             - POST
             - DELETE
-          CachePolicyId: !Ref VSCodeInstanceCachePolicy
-          OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3 # Managed-AllViewer - see https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-origin-request-policies.html#:~:text=When%20using%20AWS,47e4%2Db989%2D5492eafa07d3
-          TargetOriginId: !GetAtt VSCodeInstanceEC2Instance.PublicDnsName
+          CachePolicyId: !Ref CachePolicy
+          # Managed-AllViewer - see https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-origin-request-policies.html#:~:text=When%20using%20AWS,47e4%2Db989%2D5492eafa07d3
+          OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3
+          TargetOriginId: !GetAtt Instance.PublicDnsName
           ViewerProtocolPolicy: allow-all
         Origins:
-          - DomainName: !GetAtt VSCodeInstanceEC2Instance.PublicDnsName
-            Id: !GetAtt VSCodeInstanceEC2Instance.PublicDnsName
+          - DomainName: !GetAtt Instance.PublicDnsName
+            Id: !GetAtt Instance.PublicDnsName
             CustomOriginConfig:
               HTTPPort: 8080
               OriginProtocolPolicy: http-only
 
 Outputs:
   PasswordURL:
-    Description: AWS Secrets Manager URL for VSCode-Server Password
+    Description: AWS Secrets Manager URL for code-server password
     Value: !Sub
       - https://${AWS::Region}.console.aws.amazon.com/secretsmanager/secret?name=${SecretName}&region=${AWS::Region}
       - SecretName: !Sub ${AWS::StackName}-Password
     Export:
       Name: !Sub ${AWS::StackName}-Password
   URL:
-    Description: VSCode-Server URL
-    Value: !Sub https://${CloudFrontDistribution.DomainName}/?folder=/home/ubuntu/environment
+    Description: code-server URL
+    Value: !Sub https://${Distribution.DomainName}/?folder=/home/ubuntu/environment
     Export:
       Name: !Sub ${AWS::StackName}-URL
