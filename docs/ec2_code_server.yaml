@@ -200,7 +200,7 @@ Parameters:
         t4g.medium,
         t4g.large,
         t4g.xlarge,
-        t4g.2xlarge,
+        t4g.2xlarge
       ]
   HomeFolder:
     Type: String
@@ -292,7 +292,7 @@ Mappings:
       PrefixList: pl-82a045eb
 
 Conditions:
-  IsUSEast1: !Equals [!Ref "AWS::Region", "us-east-1"]
+  IsUSEast1: !Equals [!Ref 'AWS::Region', 'us-east-1']
 
 Resources:
   KeyPair:
@@ -322,7 +322,7 @@ Resources:
       CidrBlock: !FindInMap [Subnets, PublicOne, CIDR]
       VpcId: !Ref VPC
       MapPublicIpOnLaunch: true
-      AvailabilityZone: !Select [0, !GetAZs ""]
+      AvailabilityZone: !Select [0, !GetAZs '']
 
   PublicOneRouteTable:
     Type: AWS::EC2::RouteTable
@@ -349,7 +349,7 @@ Resources:
       CidrBlock: !FindInMap [Subnets, PublicTwo, CIDR]
       VpcId: !Ref VPC
       MapPublicIpOnLaunch: true
-      AvailabilityZone: !Select [1, !GetAZs ""]
+      AvailabilityZone: !Select [1, !GetAZs '']
 
   PublicTwoRouteTable:
     Type: AWS::EC2::RouteTable
@@ -376,7 +376,7 @@ Resources:
       CidrBlock: !FindInMap [Subnets, PrivateOne, CIDR]
       VpcId: !Ref VPC
       MapPublicIpOnLaunch: true
-      AvailabilityZone: !Select [0, !GetAZs ""]
+      AvailabilityZone: !Select [0, !GetAZs '']
 
   PrivateSubnetTwo:
     Type: AWS::EC2::Subnet
@@ -384,7 +384,7 @@ Resources:
       CidrBlock: !FindInMap [Subnets, PrivateTwo, CIDR]
       VpcId: !Ref VPC
       MapPublicIpOnLaunch: true
-      AvailabilityZone: !Select [1, !GetAZs ""]
+      AvailabilityZone: !Select [1, !GetAZs '']
 
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -396,7 +396,7 @@ Resources:
           FromPort: 80
           ToPort: 80
           SourcePrefixListId:
-            !FindInMap [AWSRegions2PrefixListID, !Ref "AWS::Region", PrefixList]
+            !FindInMap [AWSRegions2PrefixListID, !Ref 'AWS::Region', PrefixList]
       SecurityGroupEgress:
         - Description: Allow all outbound traffic
           IpProtocol: -1
@@ -438,7 +438,7 @@ Resources:
     Properties:
       DocumentType: Command
       Content:
-        schemaVersion: "2.2"
+        schemaVersion: '2.2'
         description: Bootstrap VSCode code-server instance
         parameters:
           architecture:
@@ -549,7 +549,7 @@ Resources:
             name: UpdateProfile
             inputs:
               runCommand:
-                - "#!/bin/bash"
+                - '#!/bin/bash'
                 - echo LANG=en_US.utf-8 >> /etc/environment
                 - echo LC_ALL=en_US.UTF-8 >> /etc/environment
                 - echo 'PATH=$PATH:/home/ubuntu/.local/bin' >> /home/ubuntu/.bashrc
@@ -563,7 +563,7 @@ Resources:
               runCommand:
                 - sudo apt-get update
                 - sudo apt-get install -y -q curl nginx
-                - "#!/bin/bash"
+                - '#!/bin/bash'
                 - export HOME=/home/ubuntu
                 - curl -fsSL https://code-server.dev/install.sh | sh
                 - sudo systemctl enable --now code-server@ubuntu
@@ -650,7 +650,7 @@ Resources:
             inputs:
               runCommand:
                 - npm install -g typescript
-                - tsc --version  
+                - tsc --version
           - action: aws:runShellScript
             name: InstallGo
             inputs:
@@ -693,7 +693,7 @@ Resources:
         - Key: tag:SSMBootstrap
           Values: [True]
         - Key: tag:Name
-          Values: ["VSCodeServer"]
+          Values: ['VSCodeServer']
 
   ### Empty S3 bucket resources ###
   EmptyS3BucketExecutionRole:
@@ -717,7 +717,7 @@ Resources:
                 Action:
                   - s3:ListBucket
                   - s3:DeleteObject
-                Resource: "*"
+                Resource: '*'
 
   EmptyS3Bucket:
     Type: AWS::Lambda::Function
@@ -807,7 +807,7 @@ Resources:
                 - ssm.amazonaws.com
                 - codecommit.amazonaws.com
             Action:
-              - "sts:AssumeRole"
+              - 'sts:AssumeRole'
       ManagedPolicyArns:
         - !Sub arn:${AWS::Partition}:iam::aws:policy/AdministratorAccess
       Policies:
@@ -827,7 +827,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - codewhisperer:GenerateRecommendations
-                Resource: "*"
+                Resource: '*'
 
   VSCodeInstanceProfile:
     Type: AWS::IAM::InstanceProfile
@@ -881,14 +881,14 @@ Resources:
         MinTTL: 1
         Name:
           !Join [
-            "-",
+            '-',
             [
-              "VSCodeServer",
+              'VSCodeServer',
               !Select [
                 4,
-                !Split ["-", !Select [2, !Split ["/", !Ref AWS::StackId]]],
-              ],
-            ],
+                !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]
+              ]
+            ]
           ]
         ParametersInCacheKeyAndForwardedToOrigin:
           CookiesConfig:
@@ -933,11 +933,11 @@ Resources:
               !If # DNS rule - see https://docs.aws.amazon.com/ja_jp/vpc/latest/userguide/AmazonDNS-concepts.html#vpc-dns-hostnames
               - IsUSEast1
               - !Sub
-                - "ec2-${EIP}.compute-1.amazonaws.com"
-                - EIP: !Join ["-", !Split [".", !Ref VSCodeInstanceEIP]]
+                - 'ec2-${EIP}.compute-1.amazonaws.com'
+                - EIP: !Join ['-', !Split ['.', !Ref VSCodeInstanceEIP]]
               - !Sub
-                - "ec2-${EIP}.${AWS::Region}.compute.amazonaws.com"
-                - EIP: !Join ["-", !Split [".", !Ref VSCodeInstanceEIP]]
+                - 'ec2-${EIP}.${AWS::Region}.compute.amazonaws.com'
+                - EIP: !Join ['-', !Split ['.', !Ref VSCodeInstanceEIP]]
             Id: !Sub CloudFront-${AWS::StackName}
             CustomOriginConfig:
               OriginProtocolPolicy: http-only
