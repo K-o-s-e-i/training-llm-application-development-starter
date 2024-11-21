@@ -206,14 +206,6 @@ Parameters:
     Type: String
     Description: The home folder in the VSCodeInstance
     Default: /home/ubuntu/environment
-  DevServerBasePath:
-    Type: String
-    Description: The base path for the application to be added to nginx sites-available list for code-server
-    Default: app
-  DevServerPort:
-    Type: Number
-    Description: The port for the DevServer
-    Default: 8081
   EC2KeyPair:
     Type: String
     Description: Name for EC2 KeyPair
@@ -231,8 +223,6 @@ Metadata:
           default: Code Server Configuration
         Parameters:
           - HomeFolder
-          - DevServerBasePath
-          - DevServerPort
     ParameterLabels:
       EC2KeyPair:
         default: EC2 key pair name
@@ -240,10 +230,6 @@ Metadata:
         default: Attached volume size
       HomeFolder:
         default: Folder to open in code server when launching
-      DevServerBasePath:
-        default: BasePath where the application runs
-      DevServerPort:
-        default: Port where the application runs
 Mappings:
   Subnets:
     VPC:
@@ -526,13 +512,6 @@ Resources:
                       server_name ${CloudFrontDistribution.DomainName};
                       location / {
                         proxy_pass http://localhost:8080/;
-                        proxy_set_header Host \$host;
-                        proxy_set_header Upgrade \$http_upgrade;
-                        proxy_set_header Connection upgrade;
-                        proxy_set_header Accept-Encoding gzip;
-                      }
-                      location /${DevServerBasePath} {
-                        proxy_pass http://localhost:${DevServerPort}/${DevServerBasePath};
                         proxy_set_header Host \$host;
                         proxy_set_header Upgrade \$http_upgrade;
                         proxy_set_header Connection upgrade;
