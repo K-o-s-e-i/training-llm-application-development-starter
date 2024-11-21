@@ -319,8 +319,8 @@ Resources:
       SecurityGroupIngress:
         - Description: Allow HTTP from com.amazonaws.global.cloudfront.origin-facing
           IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
+          FromPort: 8080
+          ToPort: 8080
           SourcePrefixListId:
             !FindInMap [AWSRegions2PrefixListID, !Ref 'AWS::Region', PrefixList]
       SecurityGroupEgress:
@@ -741,6 +741,7 @@ Resources:
                 - EIP: !Join ['-', !Split ['.', !Ref VSCodeInstanceEIP]]
             Id: !Sub CloudFront-${AWS::StackName}
             CustomOriginConfig:
+              HTTPPort: 8080
               OriginProtocolPolicy: http-only
 
 Outputs:
