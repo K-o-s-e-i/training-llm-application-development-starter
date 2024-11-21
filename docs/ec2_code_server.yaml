@@ -207,22 +207,6 @@ Parameters:
     Description: The home folder in the VSCodeInstance
     Default: /home/ubuntu/environment
 
-Metadata:
-  AWS::CloudFormation::Interface:
-    ParameterGroups:
-      - Label:
-          default: Instance Configuration
-        Parameters:
-          - InstanceVolumeSize
-      - Label:
-          default: Code Server Configuration
-        Parameters:
-          - HomeFolder
-    ParameterLabels:
-      InstanceVolumeSize:
-        default: Attached volume size
-      HomeFolder:
-        default: Folder to open in code server when launching
 Mappings:
   Subnets:
     VPC:
