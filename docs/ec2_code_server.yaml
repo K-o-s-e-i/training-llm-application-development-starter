@@ -455,33 +455,7 @@ Resources:
                   EOF
                 - sudo -u ubuntu --login mkdir -p /home/ubuntu/.local/share/code-server/User/
                 - sudo -u ubuntu --login touch /home/ubuntu/.local/share/code-server/User/settings.json
-                - !Sub |
-                  sudo tee /home/ubuntu/.local/share/code-server/User/settings.json <<EOF
-                  {
-                    "extensions.autoUpdate": false,
-                    "extensions.autoCheckUpdates": false,
-                    "terminal.integrated.cwd": "${HomeFolder}",
-                    "telemetry.telemetryLevel": "off",
-                    "security.workspace.trust.startupPrompt": "never",
-                    "security.workspace.trust.enabled": false,
-                    "security.workspace.trust.banner": "never",
-                    "security.workspace.trust.emptyWindow": false,
-                    "editor.indentSize": "tabSize",
-                    "editor.tabSize": 2,
-                    "python.testing.pytestEnabled": true,
-                    "auto-run-command.rules": [
-                      {
-                        "command": "workbench.action.terminal.new"
-                      }
-                    ]
-                  }
-                  EOF
                 - sudo systemctl restart code-server@ubuntu
-                # - sudo -u ubuntu --login code-server --install-extension AmazonWebServices.aws-toolkit-vscode --force
-                - sudo -u ubuntu --login code-server --install-extension AmazonWebServices.amazon-q-vscode --force
-                - sudo -u ubuntu --login code-server --install-extension synedra.auto-run-command --force
-                - sudo -u ubuntu --login code-server --install-extension vscjava.vscode-java-pack --force
-                - sudo -u ubuntu --login code-server --install-extension ms-vscode.live-server --force
                 - sudo chown ubuntu:ubuntu /home/ubuntu -R
   VSCodeInstanceSSMAssociation:
     Type: AWS::SSM::Association
