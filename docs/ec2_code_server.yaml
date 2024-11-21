@@ -326,7 +326,15 @@ Resources:
             Principal:
               Service: ec2.amazonaws.com
       ManagedPolicyArns:
-        - !Sub arn:${AWS::Partition}:iam::aws:policy/AdministratorAccess
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Policies:
+        - PolicyName: SecretManagerGetSecretValue
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: !Ref CodeServerPasswordSecret
   InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
