@@ -250,12 +250,6 @@ Mappings:
       CIDR: 10.0.0.0/16
     PublicOne:
       CIDR: 10.0.1.0/24
-    PublicTwo:
-      CIDR: 10.0.2.0/24
-    PrivateOne:
-      CIDR: 10.0.3.0/24
-    PrivateTwo:
-      CIDR: 10.0.4.0/24
   # aws ec2 describe-managed-prefix-lists  --region <REGION> | jq -r '.PrefixLists[] | select (.PrefixListName == "com.amazonaws.global.cloudfront.origin-facing") | .PrefixListId'
   AWSRegions2PrefixListID:
     ap-northeast-1:
@@ -342,49 +336,6 @@ Resources:
     Properties:
       RouteTableId: !Ref PublicOneRouteTable
       SubnetId: !Ref PublicSubnetOne
-
-  PublicSubnetTwo:
-    Type: AWS::EC2::Subnet
-    Properties:
-      CidrBlock: !FindInMap [Subnets, PublicTwo, CIDR]
-      VpcId: !Ref VPC
-      MapPublicIpOnLaunch: true
-      AvailabilityZone: !Select [1, !GetAZs '']
-
-  PublicTwoRouteTable:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref VPC
-
-  PublicTwoRoute:
-    Type: AWS::EC2::Route
-    DependsOn: GatewayAttachment
-    Properties:
-      RouteTableId: !Ref PublicTwoRouteTable
-      DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref InternetGateway
-
-  PublicTwoRouteTableAssoc:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      RouteTableId: !Ref PublicTwoRouteTable
-      SubnetId: !Ref PublicSubnetTwo
-
-  PrivateSubnetOne:
-    Type: AWS::EC2::Subnet
-    Properties:
-      CidrBlock: !FindInMap [Subnets, PrivateOne, CIDR]
-      VpcId: !Ref VPC
-      MapPublicIpOnLaunch: true
-      AvailabilityZone: !Select [0, !GetAZs '']
-
-  PrivateSubnetTwo:
-    Type: AWS::EC2::Subnet
-    Properties:
-      CidrBlock: !FindInMap [Subnets, PrivateTwo, CIDR]
-      VpcId: !Ref VPC
-      MapPublicIpOnLaunch: true
-      AvailabilityZone: !Select [1, !GetAZs '']
 
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
