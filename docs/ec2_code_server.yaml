@@ -401,11 +401,6 @@ Resources:
         - Key: Name
           Value: !Ref AWS::StackName
 
-  VSCodeInstanceEIP:
-    Type: AWS::EC2::EIP
-    Properties:
-      InstanceId: !Ref VSCodeInstanceEC2Instance
-
   ########### CloudFront Resources ###########
   VSCodeInstanceCachePolicy:
     Type: AWS::CloudFront::CachePolicy
@@ -464,16 +459,8 @@ Resources:
           TargetOriginId: !Sub CloudFront-${AWS::StackName}
           ViewerProtocolPolicy: allow-all
         Origins:
-          - DomainName:
-              !If # DNS rule - see https://docs.aws.amazon.com/ja_jp/vpc/latest/userguide/AmazonDNS-concepts.html#vpc-dns-hostnames
-              - IsUSEast1
-              - !Sub
-                - 'ec2-${EIP}.compute-1.amazonaws.com'
-                - EIP: !Join ['-', !Split ['.', !Ref VSCodeInstanceEIP]]
-              - !Sub
-                - 'ec2-${EIP}.${AWS::Region}.compute.amazonaws.com'
-                - EIP: !Join ['-', !Split ['.', !Ref VSCodeInstanceEIP]]
-            Id: !Sub CloudFront-${AWS::StackName}
+          - DomainName: !GetAtt VSCodeInstanceEC2Instance.PublicDnsName
+            Id: !GetAtt VSCodeInstanceEC2Instance.PublicDnsName
             CustomOriginConfig:
               HTTPPort: 8080
               OriginProtocolPolicy: http-only
