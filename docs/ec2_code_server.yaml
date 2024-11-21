@@ -315,7 +315,7 @@ Resources:
     UpdateReplacePolicy: Delete
 
   ########### EC2 Resources ###########
-  Role:
+  InstanceRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -331,7 +331,7 @@ Resources:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Roles:
-        - !Ref VSCodeInstanceRole
+        - !Ref InstanceRole
 
   Instance:
     Type: AWS::EC2::Instance
@@ -344,7 +344,7 @@ Resources:
           DeviceIndex: '0'
           GroupSet:
             - !Ref SecurityGroup
-      IamInstanceProfile: !Ref VSCodeInstanceProfile
+      IamInstanceProfile: !Ref InstanceProfile
       BlockDeviceMappings:
         - Ebs:
             VolumeSize: !Ref InstanceVolumeSize
@@ -397,7 +397,7 @@ Resources:
         MinTTL: 1
         Name:
           # prettier-ignore
-          !Join ['-', ['VSCodeServer', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]
+          !Join ['-', ['code-server', !Select [4, !Split ['-', !Select [2, !Split ['/', !Ref AWS::StackId]]]]]]
         ParametersInCacheKeyAndForwardedToOrigin:
           CookiesConfig:
             CookieBehavior: all
