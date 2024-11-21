@@ -1,4 +1,4 @@
-Description: Create a VSCode code-server instance with an Amazon CloudFront distribution.
+AWSTemplateFormatVersion: '2010-09-09'
 
 Parameters:
   InstanceVolumeSize:
@@ -248,9 +248,6 @@ Mappings:
     us-west-2:
       PrefixList: pl-82a045eb
 
-Conditions:
-  IsUSEast1: !Equals [!Ref 'AWS::Region', 'us-east-1']
-
 Resources:
   ########### VPC Resources ###########
   VPC:
@@ -456,7 +453,7 @@ Resources:
             - DELETE
           CachePolicyId: !Ref VSCodeInstanceCachePolicy
           OriginRequestPolicyId: 216adef6-5c7f-47e4-b989-5492eafa07d3 # Managed-AllViewer - see https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-origin-request-policies.html#:~:text=When%20using%20AWS,47e4%2Db989%2D5492eafa07d3
-          TargetOriginId: !Sub CloudFront-${AWS::StackName}
+          TargetOriginId: !GetAtt VSCodeInstanceEC2Instance.PublicDnsName
           ViewerProtocolPolicy: allow-all
         Origins:
           - DomainName: !GetAtt VSCodeInstanceEC2Instance.PublicDnsName
