@@ -206,10 +206,6 @@ Parameters:
     Type: String
     Description: The home folder in the VSCodeInstance
     Default: /home/ubuntu/environment
-  EC2KeyPair:
-    Type: String
-    Description: Name for EC2 KeyPair
-    Default: ws-default-keypair
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -218,14 +214,11 @@ Metadata:
           default: Instance Configuration
         Parameters:
           - InstanceVolumeSize
-          - EC2KeyPair
       - Label:
           default: Code Server Configuration
         Parameters:
           - HomeFolder
     ParameterLabels:
-      EC2KeyPair:
-        default: EC2 key pair name
       InstanceVolumeSize:
         default: Attached volume size
       HomeFolder:
@@ -275,10 +268,6 @@ Conditions:
   IsUSEast1: !Equals [!Ref 'AWS::Region', 'us-east-1']
 
 Resources:
-  KeyPair:
-    Type: AWS::EC2::KeyPair
-    Properties:
-      KeyName: !Ref EC2KeyPair
   ########### VPC Resources ###########
   VPC:
     Type: AWS::EC2::VPC
@@ -668,7 +657,6 @@ Resources:
   VSCodeInstanceEC2Instance:
     Type: AWS::EC2::Instance
     Properties:
-      KeyName: !Ref EC2KeyPair
       BlockDeviceMappings:
         - Ebs:
             VolumeSize: !Ref InstanceVolumeSize
