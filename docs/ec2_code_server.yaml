@@ -202,6 +202,10 @@ Parameters:
         t4g.xlarge,
         t4g.2xlarge
       ]
+  CodeServerPort:
+    Type: Number
+    Description: The port code-server listens on.
+    Default: 8888
 
 Mappings:
   Constants:
@@ -297,8 +301,8 @@ Resources:
       SecurityGroupIngress:
         - Description: Allow from CloudFront
           IpProtocol: tcp
-          FromPort: 8080
-          ToPort: 8080
+          FromPort: !Ref CodeServerPort
+          ToPort: !Ref CodeServerPort
           SourcePrefixListId:
             !FindInMap [AWSRegions2PrefixListID, !Ref 'AWS::Region', PrefixList]
       SecurityGroupEgress:
@@ -388,7 +392,7 @@ Resources:
 
           set +o xtrace
           sudo -u ubuntu tee /home/ubuntu/.config/code-server/config.yaml <<EOF
-          bind-addr: 0.0.0.0:8080
+          bind-addr: 0.0.0.0:${CodeServerPort}
           cert: false
           auth: password
           hashed-password: "$(echo -n $(aws secretsmanager get-secret-value --secret-id '${CodeServerPasswordSecret.Id}' --query 'SecretString' --output text) | sudo npx argon2-cli -e)"
@@ -452,7 +456,7 @@ Resources:
           - DomainName: !GetAtt Instance.PublicDnsName
             Id: !GetAtt Instance.PublicDnsName
             CustomOriginConfig:
-              HTTPPort: 8080
+              HTTPPort: !Ref CodeServerPort
               OriginProtocolPolicy: http-only
 
 Outputs:
