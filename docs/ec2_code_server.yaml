@@ -400,7 +400,10 @@ Resources:
           set -o xtrace
 
           sudo systemctl restart code-server@ubuntu
+
+          # Setup directory
           sudo -u ubuntu mkdir -p /home/ubuntu/environment
+          sudo chown -R ubuntu:ubuntu /home/ubuntu
 
   ########### CloudFront Resources ###########
   CachePolicy:
