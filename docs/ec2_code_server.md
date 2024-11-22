@@ -20,25 +20,34 @@ AWS の EC2 インスタンスで code-server (ブラウザ上で動作する Vi
 
 マネジメントコンソール上部の検索欄で「CloudFormation」を検索して開きます。
 
-TODO: 画像
+![](./images/ec2_code_server/cfn_search.png)
 
 > [!NOTE]
 > 日本に在住の場合、マネジメントコンソール右上で「東京」リージョンを選択することで、開発環境を快適に使用することができます。
 
 CloudFormation のホーム画面左のメニューから「スタック」を開き、「スタックの作成」を選択します。
 
-TODO: 画像
+![](./images/ec2_code_server/cfn_home.png)
 
-[ec2_code_server.yaml](ec2_code_server.yaml) をダウンロードして、「スタックの作成」画面でアップロードして次に進みます。
+[ec2_code_server.yaml](ec2_code_server.yaml) をダウンロードします。
 
-TODO: 画像
+![](./images/ec2_code_server/yaml_download.png)
+
+「スタックの作成」画面で ec2_code_server.yaml をアップロードして次に進みます。
+
+![](./images/ec2_code_server/cfn_stack_create.png)
 
 スタック名を適当につけて、その他の設定はデフォルトのままで、作成まで進めます。
-(最後に IAM リソースが作成されることを承認するチェックボックスにチェックが必要です)
 
-TODO: 画像
+![](./images/ec2_code_server/cfn_stack_create_detail.png)
+
+最後に IAM リソースが作成されることを承認するチェックボックスにチェックが必要です。
+
+![](./images/ec2_code_server/cfn_stack_create_check.png)
 
 5 分〜10 分ほどで、スタックの作成が完了します。
+
+![](./images/ec2_code_server/cfn_stack_create_complete.png)
 
 > [!WARNING]
 > AWS のハンズオンでは、AWS CLI や CDK、Terraform、Serverless Framework などのツールを使用するために、開発環境に非常に強い権限が必要なことが多いです。
@@ -48,15 +57,26 @@ TODO: 画像
 
 作成が完了したスタックの「出力」を開きます。
 
-TODO: 画像
+![](./images/ec2_code_server/cfn_stack_output.png)
 
 「PasswordURL」にアクセスし、「シークレットの値を取得する」をクリックしてパスワードを確認してコピーします。
 
-TODO: 画像
+![](./images/ec2_code_server/secret.png)
+
+![](./images/ec2_code_server/secret_show.png)
 
 CloudFormation のスタックの出力の「URL」にアクセスし、コピーしたパスワードを入力します。
 
-TODO: 画像
+![](./images/ec2_code_server/code_server_signin.png)
+
+![](./images/ec2_code_server/code_server_signined.png)
+
+> [!NOTE]
+> パスワードはスタックを作成するたびに異なります。
+
+「Yes, I trust the authors」をクリックすると開発環境が使用可能になります。
+
+![](./images/ec2_code_server/code_server.png)
 
 ## トラブルシューティング
 
@@ -66,15 +86,17 @@ TODO: 画像
 
 マネジメントコンソール上部の検索欄で「Systems Manager」を検索して開きます。
 
-TODO: 画像
+![](./images/ec2_code_server/systems_manager_search.png)
 
 Systems Manager のホーム画面左のメニューから「セッションマネージャー」を開き、「セッションの開始」をクリックします。
 
-TODO: 画像
+![](./images/ec2_code_server/systems_manager_home.png)
 
 「ターゲットインスタンス」で該当の EC2 インスタンスを選択して、「Start session」をクリックすると、ブラウザ上で EC2 インスタンスに接続できます。
 
-TODO: 画像
+![](./images/ec2_code_server/session_manager_start.png)
+
+![](./images/ec2_code_server/session_manager_connected.png)
 
 ### 起動時のスクリプトのログ確認手順
 
@@ -105,11 +127,11 @@ curl -s http://169.254.169.254/latest/user-data | sudo bash
 
 マネジメントコンソール上部の検索欄で「EC2」を検索して開きます。
 
-TODO: 画像
+![](./images/ec2_code_server/ec2_home.png)
 
 EC2 のホーム画面左のメニューから「インスタンス」を開き、EC2 インスタンスを選択して、「インスタンスの状態」から「インスタンスの停止」を実行します。
 
-TODO: 画像
+![](./images/ec2_code_server/ec2_stop.png)
 
 > [!WARNING]
 > EC2 インスタンスを停止しても、データを保存するストレージ (EBS) は確保したままのため、ストレージの料金は発生し続けます。
@@ -119,11 +141,9 @@ TODO: 画像
 
 マネジメントコンソール上部の検索欄で「CloudFormation」を検索して開きます。
 
-TODO: 画像
-
 CloudFormation のホーム画面左のメニューから「スタック」を開き、スタックを選択して、「削除」を実行します。
 
-TODO: 画像
+![](./images/ec2_code_server/cfn_stack_delete.png)
 
 ## 基本操作
 
@@ -131,21 +151,23 @@ TODO: 画像
 
 画面左のメニューボタン (≡) をクリックし、「ターミナル」>「新しいターミナル」でターミナルを開くことができます。
 
-TODO: 画像
+![](./images/ec2_code_server/code_server_terminal.png)
 
 ### ファイルのアップロード
 
 ローカルからファイルをアップロードする際は、エクスプローラー (画面左のファイルのアイコン) を開いて、エクスプローラーを右クリックして「アップロード」を選択してください。
 
-TODO: 画像
+![](./images/ec2_code_server/code_server_upload.png)
 
 または、エクスプローラーにドラッグ & ドロップすることでもファイルをアップロードできます。
 
 ### Web アプリケーションのプレビュー (ポートの転送)
 
-ターミナル上で Web アプリケーション等を起動した場合、ターミナルの右の「ポート」のタブを開いて、「転送されたアドレス」を右クリックし、「ブラウザーで開く」をクリックすると開くことができます。または、画面右下に表示される「ブラウザーで開く」をクリックしてください。
+ターミナル上で Web アプリケーション等を起動した場合、画面右下に表示される「Open in Browser」をクリックするとプレビューできます。
 
-TODO: 画像
+![](./images/ec2_code_server/code_server_port_forward.png)
+
+または、`https://<ランダムな文字列>.cloudfront.net/proxy/<ポート番号>/` にアクセスすることでも、Web アプリケーションのプレビューが可能です。
 
 ## 参考
 
