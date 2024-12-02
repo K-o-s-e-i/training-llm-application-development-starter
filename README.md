@@ -22,24 +22,17 @@ LLM アプリケーション開発者養成講座のハンズオン環境構築�
 以下のコマンドでこのリポジトリのソースコードをダウンロードしてください。
 
 ```console
-curl -LsSf -o training-llm-application-development-starter.tar.gz \
-  https://github.com/GenerativeAgents/training-llm-application-development-starter/archive/refs/heads/main.tar.gz
-```
-
-以下のコマンドで zip ファイルを解凍してください。
-
-```console
-tar -xzvf training-llm-application-development-starter.tar.gz
+git clone https://github.com/GenerativeAgents/training-llm-application-development-starter.git
 ```
 
 cd コマンドでディレクトリを移動してください。
 
 ```console
-cd training-llm-application-development-starter-main
+cd training-llm-application-development-starter
 ```
 
 > [!NOTE]
-> 以後のコマンドはすべて training-llm-application-development-starter-main ディレクトリで実行します。
+> 以後のコマンドはすべて training-llm-application-development-starter ディレクトリで実行します。
 
 ### uv のインストール
 
