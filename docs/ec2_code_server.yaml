@@ -249,6 +249,9 @@ Mappings:
     us-west-2:
       PrefixList: pl-82a045eb
 
+Conditions:
+  IsUSEast1: !Equals [!Ref 'AWS::Region', 'us-east-1']
+
 Resources:
   ########### VPC Resources ###########
   VPC:
@@ -405,6 +408,12 @@ Resources:
           sudo -u ubuntu mkdir -p /home/ubuntu/environment
           sudo chown -R ubuntu:ubuntu /home/ubuntu
 
+  # インスタンスを停止してもCloudFrontのオリジンを変更しなくて済むようEIPを割り当て
+  InstanceEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      InstanceId: !Ref Instance
+
   ########### CloudFront Resources ###########
   CachePolicy:
     Type: AWS::CloudFront::CachePolicy
@@ -456,8 +465,16 @@ Resources:
           TargetOriginId: !GetAtt Instance.PublicDnsName
           ViewerProtocolPolicy: allow-all
         Origins:
-          - DomainName: !GetAtt Instance.PublicDnsName
-            Id: !GetAtt Instance.PublicDnsName
+          - Id: !GetAtt Instance.PublicDnsName
+            # DNS rule - see https://docs.aws.amazon.com/ja_jp/vpc/latest/userguide/AmazonDNS-concepts.html#vpc-dns-hostnames
+            DomainName: !If
+              - IsUSEast1
+              - !Sub
+                - 'ec2-${EIP}.compute-1.amazonaws.com'
+                - EIP: !Join ['-', !Split ['.', !Ref InstanceEIP]]
+              - !Sub
+                - 'ec2-${EIP}.${AWS::Region}.compute.amazonaws.com'
+                - EIP: !Join ['-', !Split ['.', !Ref InstanceEIP]]
             CustomOriginConfig:
               HTTPPort: !Ref CodeServerPort
               OriginProtocolPolicy: http-only
