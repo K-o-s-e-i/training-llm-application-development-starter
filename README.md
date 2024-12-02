@@ -8,7 +8,7 @@ LLM アプリケーション開発者養成講座のハンズオン環境構築�
 
 以下のいずれかの環境を準備してください。
 
-- WSL 2 (Ubuntu)
+- WSL 2 (Ubuntu) + Visual Studio Code
 - AWS Cloud9 (Amazon Linux 2023)
 - EC2 インスタンスでの code-server の利用 (構築手順は [こちら](./docs/ec2_code_server.md))
 
@@ -80,12 +80,16 @@ uv run python --version
 git clone --depth 1 https://github.com/langchain-ai/langchain.git ./tmp/langchain
 ```
 
-## 動作確認
-
-### Visual Studio Code の起動
+## エディタの起動
 
 > [!WARNING]
-> AWS Cloud9 を使用している場合と、EC2 で code-server を使用している場合はこの手順は不要です。次の「Jupyter の起動」に進んでください。
+> AWS Cloud9 を使用している場合はこの手順は不要です。「Jupyter の起動」を参照してください。
+
+<details>
+
+<summary>WSL 2 (Ubuntu) + Visual Studio Code の場合</summary>
+
+### Visual Studio Code の起動
 
 このディレクトリを Visual Studio Code で開けることを確認してください。
 
@@ -97,7 +101,35 @@ code .
 
 ![](./docs/images/vscode.png)
 
-### Jupyter の起動
+</details>
+
+<details>
+
+<summary>EC2 で code-server を使用している場合</summary>
+
+左上のメニューから「File」>「Open Folder」で「/home/ubuntu/environment/training-llm-application-development-starter」を開いてください。
+
+![](./docs/images/code_server_open_folder.png)
+
+以下の画像のように、「training-llm-application-development-starter」ディレクトリでエディタが開かれたことを確認してください。
+
+![](./docs/images/code_server_open_folder_completed.png)
+
+</details>
+
+## Jupyter のセットアップ
+
+ハンズオンでは Jupyter を使用します。
+(A) と (B) どちらかの手順で Jupyter をセットアップします。
+
+- (A) コマンドでの Jupyter の起動
+- (B) Visual Studio Code の Jupyter 拡張機能のセットアップ
+
+### (A) コマンドでの Jupyter の起動
+
+<details>
+
+<summary>WSL 2 (Ubuntu) + Visual Studio Code の場合</summary>
 
 以下のコマンドで Jupyter を起動することができます。
 
@@ -105,11 +137,13 @@ code .
 uv run jupyter notebook --port 8080
 ```
 
+</details>
+
 <details>
 
 <summary>AWS Cloud9 の場合</summary>
 
-AWS Cloud9 の場合は、上記のコマンドの代わりに以下のコマンドを実行してください。
+以下のコマンドで Jupyter を起動することができます。
 
 ```console
 uv run jupyter notebook --ip 0.0.0.0 --port 8080 --no-browser
@@ -127,7 +161,7 @@ Cloud9 の画面内のプレビューではうまく表示されないのは想�
 
 </details>
 
-### Jupyter の動作確認
+#### Jupyter への接続
 
 http://localhost:8080 にアクセスしてください。
 
@@ -142,11 +176,34 @@ Jupyter のトークンを入力するよう求められた場合、ターミナ
 
 「notebooks」というフォルダの「hello.ipynb」を開いてください。
 
-「hello.ipynb」の内容が想定通り動作するか確認確認してください。
+「hello.ipynb」の内容が想定通り動作するか確認してください。
 
 ![](./docs/images/jupyter_hello_world.png)
 
-### Streamlit の起動
+### (B) Visual Studio Code の Jupyter 拡張機能のセットアップ
+
+Visual Studio Code の画面左の「Extensions」を開いて、「RECOMMENDED」の拡張機能をすべてインストールしてください。
+
+![](./docs/images/code_server_extensions.png)
+
+「notebooks/hello.ipynb」を開いてください。
+
+![](./docs/images/code_server_notebook.png)
+
+セルにフォーカスして実行 (Shift + Enter) すると、「Select Kernel」というメニューが開きます。
+「Python Environments...」を選択してください。
+
+![](./docs/images/code_server_notebook_select_kernel.png)
+
+Python の環境として「.venv (venv/bin/python)」を選択してください。
+
+![](./docs/images/code_server_notebook_select_kernel_venv.png)
+
+その後、「hello.ipynb」の内容が想定通り動作するか確認してください。
+
+![](./docs/images/code_server_notebook_hello.png)
+
+## Streamlit の起動
 
 Jupyter を Ctrl + C で停止してください。
 
