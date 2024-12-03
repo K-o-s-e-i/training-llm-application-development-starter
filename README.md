@@ -134,7 +134,7 @@ code .
 以下のコマンドで Jupyter を起動することができます。
 
 ```console
-uv run jupyter notebook --port 8080
+make jupyter
 ```
 
 </details>
@@ -146,7 +146,7 @@ uv run jupyter notebook --port 8080
 以下のコマンドで Jupyter を起動することができます。
 
 ```console
-uv run jupyter notebook --ip 0.0.0.0 --port 8080 --no-browser
+make cloud9_jupyter
 ```
 
 Cloud9 上部の「Preview」>「Preview Running Application」をクリックしてください。
@@ -210,7 +210,7 @@ Jupyter を Ctrl + C で停止してください。
 以下のコマンドで Streamlit を起動してください。
 
 ```console
-uv run streamlit run app.py --server.port 8080
+make streamlit
 ```
 
 > [!INFO]
