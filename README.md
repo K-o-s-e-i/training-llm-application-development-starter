@@ -8,13 +8,9 @@ LLM アプリケーション開発者養成講座のハンズオン環境構築�
 
 以下のいずれかの環境を準備してください。
 
-- WSL 2 (Ubuntu) + Visual Studio Code
 - EC2 インスタンスでの code-server の利用 (構築手順は [こちら](./docs/ec2_code_server.md))
 
 ## 各種ダウンロード・インストール
-
-> [!WARNING]
-> WSL 2 の場合、「/mnt/c」ディレクトリ以下ではうまく動作しない可能性があります。「/home/<ユーザ名>」ディレクトリ以下を使用するようにしてください。
 
 ### ソースコードのダウンロード
 
@@ -81,28 +77,6 @@ git clone --depth 1 https://github.com/langchain-ai/langchain.git ./tmp/langchai
 
 ## エディタの起動
 
-<details>
-
-<summary>WSL 2 (Ubuntu) + Visual Studio Code の場合</summary>
-
-### Visual Studio Code の起動
-
-このディレクトリを Visual Studio Code で開けることを確認してください。
-
-code コマンドで Visual Studio Code を開けるように設定されている場合、以下のコマンドでこのディレクトリが開きます。
-
-```console
-code .
-```
-
-![](./docs/images/vscode.png)
-
-</details>
-
-<details>
-
-<summary>EC2 で code-server を使用している場合</summary>
-
 左上のメニューから「File」>「Open Folder」で「/home/ubuntu/environment/training-llm-application-development-starter」を開いてください。
 
 ![](./docs/images/code_server_open_folder.png)
@@ -111,50 +85,7 @@ code .
 
 ![](./docs/images/code_server_open_folder_completed.png)
 
-</details>
-
-## Jupyter のセットアップ
-
-ハンズオンでは Jupyter を使用します。
-(A) と (B) どちらかの手順で Jupyter をセットアップします。
-
-- (A) コマンドでの Jupyter の起動
-- (B) Visual Studio Code の Jupyter 拡張機能のセットアップ
-
-### (A) コマンドでの Jupyter の起動
-
-<details>
-
-<summary>WSL 2 (Ubuntu) + Visual Studio Code の場合</summary>
-
-以下のコマンドで Jupyter を起動することができます。
-
-```console
-make jupyter
-```
-
-</details>
-
-#### Jupyter への接続
-
-http://localhost:8080 にアクセスしてください。
-
-> [!NOTE]
-> EC2 で code-server を使用する環境の場合は、[こちら](./docs/ec2_code_server.md) の「Web アプリケーションのプレビュー (ポートの転送)」の手順でアクセスしてください。
-
-![](./docs/images/jupyter_auth.png)
-
-Jupyter のトークンを入力するよう求められた場合、ターミナル上に表示されているトークンをコピーしてログインしてください。
-
-![](./docs/images/jupyter_home.png)
-
-「notebooks」というフォルダの「hello.ipynb」を開いてください。
-
-「hello.ipynb」の内容が想定通り動作するか確認してください。
-
-![](./docs/images/jupyter_hello_world.png)
-
-### (B) Visual Studio Code の Jupyter 拡張機能のセットアップ
+## Jupyter のセットアップ (Visual Studio Code の Jupyter 拡張機能)
 
 Visual Studio Code の画面左の「Extensions」を開いて、「RECOMMENDED」の拡張機能をすべてインストールしてください。
 

@@ -1,8 +1,8 @@
 # AWS Cloud9 を使用する場合の補足
 
-AWS Cloud9 (Amazon Linux 2023) を使用する場合、Jupyter には以下の手順でアクセスできます。
+AWS Cloud9 (Amazon Linux 2023) を想定した補足です。
 
-### コマンドでの Jupyter の起動
+## Jupyter のセットアップ
 
 以下のコマンドで Jupyter を起動することができます。
 
@@ -19,3 +19,15 @@ Cloud9 の画面内のプレビューではうまく表示されないのは想�
 ![](./images/aws_cloud9/cloud9_pop_out_into_new_window.png)
 
 プレビューの右上のアイコン (Pop Out Into New Window) をクリックすると、ブラウザの別のタブでアクセスできます。
+
+![](./images/jupyter_auth.png)
+
+Jupyter のトークンを入力するよう求められた場合、ターミナル上に表示されているトークンをコピーしてログインしてください。
+
+![](./images/jupyter_home.png)
+
+「notebooks」というフォルダの「hello.ipynb」を開いてください。
+
+「hello.ipynb」の内容が想定通り動作するか確認してください。
+
+![](./images/jupyter_hello_world.png)
