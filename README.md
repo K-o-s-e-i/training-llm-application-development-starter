@@ -6,9 +6,9 @@ LLM アプリケーション開発者養成講座のハンズオン環境構築�
 
 ## ハンズオン環境の準備
 
-以下のいずれかの環境を準備してください。
+AWS の EC2 インスタンスで code-server (ブラウザ上で動作する Visual Studio Code) を使うハンズオン環境を使用します。
 
-- EC2 インスタンスでの code-server の利用 (構築手順は [こちら](./docs/ec2_code_server.md))
+ハンズオン環境には付与された接続情報で接続するか、[こちら](./docs/ec2_code_server.md) の手順で構築してください。
 
 ## 各種ダウンロード・インストール
 
@@ -121,10 +121,13 @@ make streamlit
 > [!INFO]
 > Streamlit の起動時に Email の入力が求められた場合、入力せず空のまま Enter で進めてください。
 
-http://localhost:8080 にアクセスして、以下のように Streamlit の画面が表示されることを確認してください。
+ターミナル上で Web アプリケーション等を起動した場合、画面右下に表示される「Open in Browser」をクリックするとプレビューできます。
 
-> [!NOTE]
-> EC2 で code-server を使用する環境の場合は、[こちら](./docs/ec2_code_server.md) の「Web アプリケーションのプレビュー (ポートの転送)」の手順でアクセスしてください。
+![](./docs/images/ec2_code_server/code_server_port_forward.png)
+
+または、`https://<ランダムな文字列>.cloudfront.net/proxy/<ポート番号>/` にアクセスすることでも、Web アプリケーションのプレビューが可能です。
+
+Streamlit にアクセスしたら、下部の入力欄に適当な入力をして、応答が表示されるか確認してください。
 
 ![](./docs/images/streamlit_hello_world.png)
 
