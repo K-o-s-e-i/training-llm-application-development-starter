@@ -9,7 +9,6 @@ LLM アプリケーション開発者養成講座のハンズオン環境構築�
 以下のいずれかの環境を準備してください。
 
 - WSL 2 (Ubuntu) + Visual Studio Code
-- AWS Cloud9 (Amazon Linux 2023)
 - EC2 インスタンスでの code-server の利用 (構築手順は [こちら](./docs/ec2_code_server.md))
 
 ## 各種ダウンロード・インストール
@@ -82,9 +81,6 @@ git clone --depth 1 https://github.com/langchain-ai/langchain.git ./tmp/langchai
 
 ## エディタの起動
 
-> [!WARNING]
-> AWS Cloud9 を使用している場合はこの手順は不要です。「Jupyter の起動」を参照してください。
-
 <details>
 
 <summary>WSL 2 (Ubuntu) + Visual Studio Code の場合</summary>
@@ -136,28 +132,6 @@ code .
 ```console
 make jupyter
 ```
-
-</details>
-
-<details>
-
-<summary>AWS Cloud9 の場合</summary>
-
-以下のコマンドで Jupyter を起動することができます。
-
-```console
-make cloud9_jupyter
-```
-
-Cloud9 上部の「Preview」>「Preview Running Application」をクリックしてください。
-
-![](./docs/images/cloud9_preview_running_application.png)
-
-Cloud9 の画面内のプレビューではうまく表示されないのは想定通りです。
-
-![](./docs/images/cloud9_pop_out_into_new_window.png)
-
-プレビューの右上のアイコン (Pop Out Into New Window) をクリックすると、ブラウザの別のタブでアクセスできます。
 
 </details>
 
