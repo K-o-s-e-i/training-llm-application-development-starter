@@ -53,6 +53,29 @@ CloudFormation のホーム画面左のメニューから「スタック」を�
 > AWS のハンズオンでは、AWS CLI や CDK、Terraform、Serverless Framework などのツールを使用するために、開発環境に非常に強い権限が必要なことが多いです。
 > そのため、この手順で構築される EC2 インスタンスには AdministratorAccess の権限を付与しています。
 
+#### 複数の環境を作成したい場合
+
+AWS CloudShell で以下のコマンドを実行することで、複数の環境を作成できます。
+
+```console
+curl -sSfLO https://raw.githubusercontent.com/GenerativeAgents/training-llm-application-development-starter/refs/heads/main/docs/ec2_code_server.yaml
+
+for i in {01..10}; do
+  aws cloudformation create-stack \
+    --stack-name "code-server-${i}" \
+    --template-body "file://$(pwd)/ec2_code_server.yaml" \
+    --capabilities CAPABILITY_IAM
+done
+```
+
+> [!WARNING]
+> 同一の AWS アカウントで多数の環境を起動する場合、以下のクォータの引き上げが必要な可能性があります。
+>
+> - リージョンあたりの VPC の数
+> - リージョンあたりの Elastic IP アドレスの数
+>
+> 参考: https://docs.aws.amazon.com/ja_jp/vpc/latest/userguide/amazon-vpc-limits.html
+
 ### code-server への接続
 
 作成が完了したスタックの「出力」を開きます。
